@@ -1,10 +1,11 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Main where
+import Control.Monad
 import Haste.App
 import Haste.DOM
 import Haste.Events
-import Server.API
 import System.IO.Unsafe
+import Server.API
 
 newTextField :: String -> String -> String -> String -> Client (Elem, Client String)
 newTextField caption ident type_ def = do
@@ -44,7 +45,7 @@ setOverlayMessage :: String -> Client ()
     , "textContent" =: "Saving..."
     ]
   outer <- newElem "div" `with` [children [overlay, msg]]
-  overlay `onEvent` Click $ \_ -> deleteChild documentBody outer
+  void $ overlay `onEvent` Click $ \_ -> deleteChild documentBody outer
   return (outer, setProp msg "textContent")
 
 -- | Save configuration with pretty confirmation screen.
@@ -75,7 +76,7 @@ booruConfigBox api cfg@(Config {..}) = do
     , style "border" =: "1px solid black"
     , style "width" =: "100%"
     , style "margin" =: "1em"]
-  btn `onEvent` Click $ \_ -> do
+  void $ btn `onEvent` Click $ \_ -> do
     u' <- getUser
     p' <- getPass
     t' <- getTags
@@ -104,7 +105,7 @@ displayConfigBox api cfg@(Config {..}) = do
     , style "border" =: "1px solid black"
     , style "width" =: "100%"
     , style "margin" =: "1em"]
-  btn `onEvent` Click $ \_ -> do
+  void $ btn `onEvent` Click $ \_ -> do
     s' <- getSecs
     let cfg' = cfg {cfgSlideDuration = read s'}
     saveConfig api cfg'
