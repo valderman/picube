@@ -1,12 +1,13 @@
 {-# LANGUAGE CPP, TupleSections #-}
 -- | API definitions for info screen server.
-module Server.API where
+module Server.API (newAPI, API (..), Config (..)) where
 import Data.Word
 import Haste.App
 #ifndef __HASTE__
 import qualified Server.Methods as M
 #endif
 import Haste.Binary
+import Server.Config
 
 instance (Binary a, Binary b, Binary c, Binary d) => Binary (a, b, c, d) where
   put (a, b, c, d) = put a >> put b >> put c >> put d
@@ -24,16 +25,16 @@ instance Binary Bool where
 
 data API = API
   { randomBooru :: Remote (Server String)
-  , setBooruCfg :: Remote (String -> String -> Char -> [String] -> Server ())
-  , getBooruCfg :: Remote (Server (String, String, Char, [String]))
+  , setCfg      :: Remote (Config -> Server ())
+  , getCfg      :: Remote (Server Config)
   , shouldClientReload :: Remote (Server Bool)
   }
 
 newAPI :: App API
 #ifndef __HASTE__
 newAPI = API <$> remote M.randomBooru
-             <*> remote M.setBooruCfg
-             <*> remote M.getBooruCfg
+             <*> remote M.setCfg
+             <*> remote M.getCfg
              <*> remote M.shouldClientReload
 #else
 newAPI = API <$> remote undefined

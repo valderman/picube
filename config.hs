@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Main where
 import Haste.App
 import Haste.DOM
@@ -20,10 +20,10 @@ main :: IO ()
 main = runApp defaultConfig $ do
   api <- newAPI
   runClient $ do
-    (u, p, r, t) <- onServer $ getBooruCfg api
-    (user, getUser) <- newTextField "Gelbooru username" "user" False u
-    (pass, getPass) <- newTextField "Gelbooru password" "pass" True p
-    (tags, getTags) <- newTextField "Gelbooru tags" "tags" False (unwords t)
+    cfg@(Config {..}) <- onServer $ getCfg api
+    (user, getUser) <- newTextField "Gelbooru username" "user" False cfgBooruUsername
+    (pass, getPass) <- newTextField "Gelbooru password" "pass" True cfgBooruPassword
+    (tags, getTags) <- newTextField "Gelbooru tags" "tags" False (unwords cfgBooruTags)
     btn <- newElem "button" `with` ["textContent" =: "Save"]
     box <- newElem "div" `with` [ children [user, pass, tags, btn]
                                 , style "width" =: "23em"
@@ -32,5 +32,10 @@ main = runApp defaultConfig $ do
       u' <- getUser
       p' <- getPass
       t' <- getTags
-      onServer $ setBooruCfg api <.> u' <.> p' <.> r <.> words t'
+      let cfg' = cfg
+            { cfgBooruUsername = u'
+            , cfgBooruPassword = p'
+            , cfgBooruTags = words t'
+            }
+      onServer $ setCfg api <.> cfg'
     setChildren documentBody [box]

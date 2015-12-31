@@ -35,25 +35,15 @@ randomBooru = liftIO $ do
   where
     basefile = "booru.jpg"
 
--- | Update the server's Gelbooru configuration.
-setBooruCfg :: G.User -> G.Password -> Char -> [G.Tag] -> Server ()
-setBooruCfg user pass rating tags = liftIO $ do
-  updateConfig $ \cfg -> cfg
-    { cfgBooruUsername = user
-    , cfgBooruPassword = pass
-    , cfgBooruRating = rating
-    , cfgBooruTags = tags
-    }
+-- | Update the server's configuration.
+setCfg :: Config -> Server ()
+setCfg cfg = liftIO $ do
+  updateConfig $ const cfg
   putMVar reloadMVar True
 
--- | Get the server's Gelbooru configuration.
-getBooruCfg :: Server (G.User, G.Password, Char, [G.Tag])
-getBooruCfg = liftIO $ do
-  cfg <- getConfig
-  return ( cfgBooruUsername cfg
-         , cfgBooruPassword cfg
-         , cfgBooruRating cfg
-         , cfgBooruTags cfg)
+-- | Get the server's configuration.
+getCfg :: Server Config
+getCfg = liftIO getConfig
 
 -- | Should the client reload to apply new configuration?
 --   Beware, if more than one client is awaiting reload, only one of them
