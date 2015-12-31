@@ -21,8 +21,6 @@ clean:
 	find . -iname '*.o' -exec rm \{\} \;
 	find . -iname '*.jsmod' -exec rm \{\} \;
 	find . -iname '*~' -exec rm \{\} \;
-	rm -f booru.jpg
-	rm -f config.txt
 
 distclean: clean
-	rm -f index.html app.html app
+	rm -f index.html app.html app config.txt booru.jpg

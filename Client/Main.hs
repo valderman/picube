@@ -29,7 +29,7 @@ newBooruFrame api = do
       set img ["src" =: url]
 
 textStyle :: Slide -> Slide
-textStyle = fontSize (Pt 40) . font "verdana"
+textStyle = fontSize (Pt 40) . font "helvetica"
 
 slideshow :: Client () -> Deck -> Int -> Int -> Int -> Client ()
 slideshow cb d ns t = go
@@ -39,9 +39,6 @@ slideshow cb d ns t = go
       cb
       goto d ix'
       go ix'
-
-slideDuration :: Int
-slideDuration = 20
 
 -- NOTE: make sure to call @removeItem "reload"@ iff
 -- @getItem "reload" == pure False@!
@@ -65,12 +62,13 @@ clientMain api@(API {..}) = do
         , centered booruFrame
         ]
 
-  -- Reload when reconfiguration happens
+  -- Get config and reload when it changes
+  cfg@(Config {..}) <- onServer getCfg
   fork $ awaitReconfiguration api
   
   -- Start slideshow
   d <- liftIO $ present def {transition = fade} slides
-  slideshow cb d (length slides) (slideDuration*1000) 1
+  slideshow cb d (length slides) (cfgSlideDuration*1000) 1
 
 -- | Reload page when reconfiguration happens.
 awaitReconfiguration :: API -> Client ()

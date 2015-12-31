@@ -5,33 +5,47 @@ import qualified Server.Gelbooru as G
 import System.Random
 import Control.Concurrent
 import System.IO.Unsafe
+import Data.IORef
 
 {-# NOINLINE reloadMVar #-}
 reloadMVar :: MVar Bool
 reloadMVar = unsafePerformIO $ newEmptyMVar
+
+{-# NOINLINE booruPersists #-}
+booruPersists :: IORef Int
+booruPersists = unsafePerformIO $ newIORef 0
 
 -- | Get a random image from Gelbooru with the given tags.
 --   We need to download the image, to avoid Gelbooru going all "OMG NO INLINE
 --   LINKS PLZ" on us.
 randomBooru :: Server String
 randomBooru = liftIO $ do
+    ps <- readIORef booruPersists
     cfg <- getConfig
-    mb <- G.booruLogin (cfgBooruUsername cfg) (cfgBooruPassword cfg)
-    case mb of
-      Just b -> do
-        let booru = b
-              { G.cfgLimit = 100
-              , G.cfgRating = read [cfgBooruRating cfg]
-              }
-        res <- G.booruSearch booru (cfgBooruTags cfg) 0
-        if null res
-          then return ""
-          else do
-            ix <- randomRIO (0, length res-1)
-            G.booruDownload booru basefile (G.imgSampleURL (res !! ix))
-            return (basefile ++ "?" ++ show ix)
-      _ -> do
-        return []
+    if ps > 0
+      then do
+        -- Race condition if more than one device is using the same server,
+        -- so don't do that.
+        writeIORef booruPersists (ps-1)
+        return basefile
+      else do
+        mb <- G.booruLogin (cfgBooruUsername cfg) (cfgBooruPassword cfg)
+        case mb of
+          Just b -> do
+            let booru = b
+                  { G.cfgLimit = 100
+                  , G.cfgRating = read [cfgBooruRating cfg]
+                  }
+            res <- G.booruSearch booru (cfgBooruTags cfg) 0
+            if null res
+              then return ""
+              else do
+                ix <- randomRIO (0, length res-1)
+                G.booruDownload booru basefile (G.imgSampleURL (res !! ix))
+                writeIORef booruPersists (cfgBooruPersists cfg)
+                return (basefile ++ "?" ++ show ix)
+          _ -> do
+            return []
   where
     basefile = "booru.jpg"
 
@@ -39,6 +53,7 @@ randomBooru = liftIO $ do
 setCfg :: Config -> Server ()
 setCfg cfg = liftIO $ do
   updateConfig $ const cfg
+  writeIORef booruPersists 0
   putMVar reloadMVar True
 
 -- | Get the server's configuration.

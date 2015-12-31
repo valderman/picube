@@ -12,16 +12,26 @@ instance Binary Config where
     put cfgBooruPassword
     put cfgBooruRating
     put cfgBooruTags
-    put cfgUpdateDelay
-  get = Config <$> get <*> get <*> get <*> get
+    put cfgBooruPersists
+    put cfgSlideDuration
+  get = Config <$> get <*> get <*> get <*> get <*> get
                <*> get
 
 data Config = Config
-  { cfgBooruUsername :: String
+  { -- | Username for Gelbooru.
+    cfgBooruUsername :: String
+    -- | Password for Gelbooru.
   , cfgBooruPassword :: String
+    -- | Rating filter for Gelbooru.
   , cfgBooruRating   :: Char
+    -- | Tag filter for Gelbooru.
   , cfgBooruTags     :: [String]
-  , cfgUpdateDelay   :: Int
+    -- | How many slide updates should Gelbooru images persist before a new one
+    --   is fetched? A new image will be randomly selected every
+    --   @cfgSlideDuration * cfgBooruPersists * num_slides@ seconds.
+  , cfgBooruPersists :: Int
+    -- | How many seconds between slide updates?
+  , cfgSlideDuration :: Int
   } deriving (Show, Read)
 
 defaultConfig :: Config
@@ -30,7 +40,8 @@ defaultConfig = Config
   , cfgBooruPassword = ""
   , cfgBooruRating   = 's'
   , cfgBooruTags     = []
-  , cfgUpdateDelay   = 30
+  , cfgBooruPersists = 10
+  , cfgSlideDuration = 30
   }
 
 {-# NOINLINE configRef #-}
