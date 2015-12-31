@@ -1,5 +1,5 @@
-RELEASEOPTS=--opt-all
-DEBUGOPTS=--debug
+RELEASEOPTS=--opt-all -Wall
+DEBUGOPTS=--debug -Wall
 HSFILES=app.hs config.hs Server/*.hs Client/*.hs
 
 debug: $(HSFILES)
