@@ -55,6 +55,25 @@ saveConfig api cfg = do
   onServer $ setCfg api <.> cfg
   setOverlayMessage "Configuration saved, click to continue"
 
+dropdown :: String -> String -> [(String, String)] -> Int -> Client (Elem, Client String)
+dropdown caption ident es ix = liftIO $ do
+  label <- newElem "label" `with`
+    [ "textContent" =: caption
+    , "for" =: ident
+    , style "margin" =: "0.5em" ]
+  opts <- forM es $ \(lbl, val) ->
+    newElem "option" `with` [ "value" =: val , "textContent" =: lbl]
+  sel <- newElem "select" `with`
+    [ "id" =: ident
+    , style "margin" =: "0.5em"
+    , children opts
+    , "selectedIndex" =: show ix ]
+  box <- newElem "div" `with`
+    [ children [label, sel]
+    , style "text-align" =: "right"
+    , style "margin-right" =: "0.5em" ]
+  return (box, getProp sel "value")
+
 -- | Gelbooru configuration.
 booruConfigBox :: API -> Config -> Client Elem
 booruConfigBox api cfg@(Config {..}) = do
@@ -62,6 +81,8 @@ booruConfigBox api cfg@(Config {..}) = do
                                   cfgBooruUsername
   (pass, getPass) <- newTextField "Gelbooru password:" "pass" "password"
                                   cfgBooruPassword
+  (rating, getRating) <- dropdown "Rating:" "rating" ratings
+                                  (selIx cfgBooruRating)
   (tags, getTags) <- newTextField "Gelbooru tags:" "tags" "text"
                                   (unwords cfgBooruTags)
   hdr <- newElem "h3" `with`
@@ -71,7 +92,7 @@ booruConfigBox api cfg@(Config {..}) = do
     [ "textContent" =: "Save"
     , style "margin" =: "0.5em"]
   box <- newElem "div" `with`
-    [ children [hdr, user, pass, tags, btn]
+    [ children [hdr, user, pass, rating, tags, btn]
     , style "display" =: "inline-block"
     , style "border" =: "1px solid black"
     , style "width" =: "100%"
@@ -80,13 +101,28 @@ booruConfigBox api cfg@(Config {..}) = do
     u' <- getUser
     p' <- getPass
     t' <- getTags
+    r' <- getRating
     let cfg' = cfg
           { cfgBooruUsername = u'
           , cfgBooruPassword = p'
           , cfgBooruTags = words t'
+          , cfgBooruRating = head r'
           }
     saveConfig api cfg'
   return box
+
+selIx :: Char -> Int
+selIx 's' = 0
+selIx 'q' = 1
+selIx 'e' = 2
+selIx _   = 3
+
+ratings :: [(String, String)]
+ratings =
+  [ ("Safe", "s")
+  , ("Questionable", "q")
+  , ("Explicit", "e")
+  , ("Any", "a")]
 
 -- | Display configuration.
 displayConfigBox :: API -> Config -> Client Elem
