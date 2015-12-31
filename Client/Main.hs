@@ -5,7 +5,6 @@ import Haste.App
 import Haste.App.Concurrent
 import Haste.Deck
 import Haste.DOM
-import Haste.Events
 import Haste.Foreign
 import Haste.LocalStorage
 import Control.Monad
@@ -63,7 +62,7 @@ clientMain api@(API {..}) = do
         ]
 
   -- Get config and reload when it changes
-  cfg@(Config {..}) <- onServer getCfg
+  Config {..} <- onServer getCfg
   fork $ awaitReconfiguration api
   
   -- Start slideshow
