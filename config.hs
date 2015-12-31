@@ -7,7 +7,12 @@ import Haste.Events
 import System.IO.Unsafe
 import Server.API
 
-newTextField :: String -> String -> String -> String -> Client (Elem, Client String)
+-- | Create a new, labeled text field.
+newTextField :: String -- ^ Label caption
+             -> String -- ^ Text field identifier
+             -> String -- ^ Text field type; password/text/number, etc.
+             -> String -- ^ Initial value
+             -> Client (Elem, Client String)
 newTextField caption ident type_ def = do
   label <- newElem "label" `with` [ "textContent" =: caption
                                   , "for" =: ident
@@ -22,7 +27,10 @@ newTextField caption ident type_ def = do
                               , style "margin-right" =: "0.5em"]
   return (box, getProp e "value")
 
+-- | Pre-created "saving..." overlay.
 saveOverlay :: Elem
+
+-- | Change the message currently displayed on the save overlay.
 setOverlayMessage :: String -> Client ()
 (saveOverlay, setOverlayMessage) = unsafePerformIO $ do
   overlay <- newElem "div" `with`
@@ -46,7 +54,9 @@ setOverlayMessage :: String -> Client ()
     , "textContent" =: "Saving..."
     ]
   outer <- newElem "div" `with` [children [overlay, msg]]
-  void $ overlay `onEvent` Click $ \_ -> deleteChild documentBody outer
+  void $ overlay `onEvent` Click $ \_ -> do
+    deleteChild documentBody outer
+    setProp msg "textContent" "Saving..."
   return (outer, setProp msg "textContent")
 
 -- | Save configuration with pretty confirmation screen.
@@ -56,7 +66,12 @@ saveConfig api cfg = do
   onServer $ setCfg api <.> cfg
   setOverlayMessage "Configuration saved, click to continue"
 
-dropdown :: String -> String -> [(String, String)] -> Int -> Client (Elem, Client String)
+-- | Create a dropdown menu.
+dropdown :: String -- ^ Caption for dropdown box
+         -> String -- ^ Identifier for box
+         -> [(String, String)] -- ^ (caption, value) pairs of box contents
+         -> Int    -- ^ Select which option by default?
+         -> Client (Elem, Client String)
 dropdown caption ident es ix = liftIO $ do
   label <- newElem "label" `with`
     [ "textContent" =: caption
