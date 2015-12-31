@@ -15,7 +15,8 @@ newTextField caption ident type_ def = do
   e <- newElem "input" `with` [ "type" =: type_
                               , "id" =: ident
                               , "value" =: def
-                              , style "margin" =: "0.5em"]
+                              , style "margin" =: "0.5em"
+                              , style "width" =: "15em"]
   box <- newElem "div" `with` [ children [label, e]
                               , style "text-align" =: "right"
                               , style "margin-right" =: "0.5em"]
@@ -66,6 +67,7 @@ dropdown caption ident es ix = liftIO $ do
   sel <- newElem "select" `with`
     [ "id" =: ident
     , style "margin" =: "0.5em"
+    , style "width" =: "15.36em"
     , children opts
     , "selectedIndex" =: show ix ]
   box <- newElem "div" `with`
