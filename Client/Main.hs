@@ -2,6 +2,7 @@
 module Client.Main where
 import Haste (setTimer, Interval (..))
 import Haste.App
+import Haste.App.Concurrent
 import Haste.Deck
 import Haste.DOM
 import Haste.Events
@@ -49,10 +50,13 @@ reloadPage = liftIO $ setItem "reload" False >> reload
 
 clientMain :: API -> Client ()
 clientMain api@(API {..}) = do
+  -- Always reload on first boot
   r <- liftIO $ getItem "reload"
   case r of
     Right False -> liftIO $ removeItem "reload"
     _           -> reloadPage
+
+  -- Set up background and page structure
   set documentBody [ style "background-color" =: "black"
                    , style "color"            =: "white"]
   (cb, booruFrame) <- newBooruFrame api
@@ -60,5 +64,18 @@ clientMain api@(API {..}) = do
         [ centered . verticallyCentered . textStyle $ clockFrame
         , centered booruFrame
         ]
+
+  -- Reload when reconfiguration happens
+  fork $ awaitReconfiguration api
+  
+  -- Start slideshow
   d <- liftIO $ present def {transition = fade} slides
   slideshow cb d (length slides) (slideDuration*1000) 1
+
+-- | Reload page when reconfiguration happens.
+awaitReconfiguration :: API -> Client ()
+awaitReconfiguration api = do
+  shouldReload <- onServer $ shouldClientReload api
+  if shouldReload
+    then reloadPage
+    else awaitReconfiguration api

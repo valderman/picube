@@ -4,9 +4,9 @@ HSFILES=app.hs config.hs Server/*.hs Client/*.hs
 
 debug: $(HSFILES)
 	hastec app.hs -fforce-recomp $(DEBUGOPTS) --output-html
-	hastec index.hs -o index.html -fforce-recomp $(DEBUGOPTS) --output-html
+	hastec config.hs -o index.html -fforce-recomp $(DEBUGOPTS) --output-html
+	chmod 644 app.html
 	chmod 644 index.html
-	chmod 644 config.html
 	ghc --make -O2 app.hs
 
 release: $(HSFILES)
