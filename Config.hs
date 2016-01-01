@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
-module Main where
+module Config (configMain) where
 import Control.Monad
-import Haste.App
+import Haste.App.Standalone
 import Haste.DOM
 import Haste.Events
 import Server.API
@@ -87,15 +87,13 @@ displayConfigBox api cfg@(Config {..}) = do
     saveConfig api cfg'
   return box
 
-main :: IO ()
-main = runApp defaultConfig $ do
-  api <- newAPI
-  runClient $ do
-    set documentBody [style "font-family" =: "helvetica"]
-    cfg <- onServer $ getCfg api
-    booru <- booruConfigBox api cfg
-    disp <- displayConfigBox api cfg
-    outer <- newElem "div" `with`
-      [ children [disp, booru]
-      , style "width" =: "30em"]
-    setChildren documentBody [outer]
+configMain :: API -> Client ()
+configMain api = do
+  set documentBody [style "font-family" =: "helvetica"]
+  cfg <- onServer $ getCfg api
+  booru <- booruConfigBox api cfg
+  disp <- displayConfigBox api cfg
+  outer <- newElem "div" `with`
+    [ children [disp, booru]
+    , style "width" =: "30em"]
+  setChildren documentBody [outer]

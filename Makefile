@@ -3,18 +3,16 @@ DEBUGOPTS=--debug -Wall
 HSFILES=app.hs config.hs Server/*.hs Client/*.hs
 
 debug: $(HSFILES)
-	hastec app.hs -fforce-recomp $(DEBUGOPTS) --output-html
-	hastec config.hs -o index.html -fforce-recomp $(DEBUGOPTS) --output-html
-	chmod 644 app.html
-	chmod 644 index.html
-	ghc --make -O2 app.hs
+	hastec app.hs -fforce-recomp $(DEBUGOPTS)
+	chmod 644 app.js
+	ghc --make app.hs
+	./app --embed app.js app.html
 
 release: $(HSFILES)
-	hastec app.hs -fforce-recomp $(RELEASEOPTS) --output-html
-	hastec config.hs -o index.html -fforce-recomp $(RELEASEOPTS) --output-html
-	chmod 644 app.html
-	chmod 644 index.html
+	hastec app.hs -fforce-recomp $(RELEASEOPTS)
+	chmod 644 app.js
 	ghc --make -O2 app.hs
+	./app --embed app.js app.html
 
 clean:
 	find . -iname '*.hi' -exec rm \{\} \;
