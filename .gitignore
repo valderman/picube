@@ -6,7 +6,6 @@
 *.jsmod
 dist/
 /app
-*.html
 /config.txt
 *.jpg
 *.js
