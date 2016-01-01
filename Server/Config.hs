@@ -44,10 +44,13 @@ defaultConfig = Config
   , cfgSlideDuration = 30
   }
 
+configFile :: FilePath
+configFile = "../config.txt"
+
 {-# NOINLINE configRef #-}
 configRef :: IORef Config
 configRef = unsafePerformIO $ do
-  cfg <- catch (tryRead "../config.txt")
+  cfg <- catch (tryRead configFile)
                (\(SomeException _) -> pure defaultConfig)
   newIORef cfg
 
@@ -70,4 +73,4 @@ getConfig :: IO Config
 getConfig = readIORef configRef
 
 saveConfig :: IO ()
-saveConfig = readIORef configRef >>= writeFile "config.txt" . show
+saveConfig = readIORef configRef >>= writeFile configFile . show
