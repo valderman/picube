@@ -27,7 +27,7 @@ randomBooru = liftIO $ do
         -- Race condition if more than one device is using the same server,
         -- so don't do that.
         writeIORef booruPersists (ps-1)
-        return basefile
+        return servefile
       else do
         mb <- G.booruLogin (cfgBooruUsername cfg) (cfgBooruPassword cfg)
         case mb of
@@ -41,13 +41,14 @@ randomBooru = liftIO $ do
               then return ""
               else do
                 ix <- randomRIO (0, length res-1)
-                G.booruDownload booru basefile (G.imgSampleURL (res !! ix))
+                G.booruDownload booru dlfile (G.imgSampleURL (res !! ix))
                 writeIORef booruPersists (cfgBooruPersists cfg)
-                return (basefile ++ "?" ++ show ix)
+                return (servefile ++ "?" ++ show ix)
           _ -> do
             return []
   where
-    basefile = "booru.jpg"
+    dlfile = "img/" ++ servefile
+    servefile = "booru.jpg"
 
 -- | Update the server's configuration.
 setCfg :: Config -> Server ()

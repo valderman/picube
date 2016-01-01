@@ -1,6 +1,6 @@
 RELEASEOPTS=--opt-all -Wall
 DEBUGOPTS=--debug -Wall
-HSFILES=app.hs config.hs Server/*.hs Client/*.hs
+HSFILES=app.hs Config.hs Server/*.hs Client/*.hs
 
 debug: $(HSFILES)
 	hastec app.hs -fforce-recomp $(DEBUGOPTS)
