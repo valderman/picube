@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP, TupleSections #-}
 -- | API definitions for info screen server.
-module Server.API (newAPI, API (..), Config (..)) where
+module Server.API (newAPI, API (..), Config (..), PictureFormat (..)) where
 import Data.Word
 import Haste.App
 #ifndef __HASTE__

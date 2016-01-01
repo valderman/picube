@@ -13,9 +13,18 @@ instance Binary Config where
     put cfgBooruRating
     put cfgBooruTags
     put cfgBooruPersists
+    put cfgBooruFormat
     put cfgSlideDuration
-  get = Config <$> get <*> get <*> get <*> get <*> get
+  get = Config <$> get <*> get <*> get <*> get <*> get <*> get
                <*> get
+
+data PictureFormat
+  = Portrait | Landscape | Either
+  deriving (Show, Enum, Read)
+
+instance Binary PictureFormat where
+  put pf = put (fromEnum pf)
+  get = toEnum <$> get
 
 data Config = Config
   { -- | Username for Gelbooru.
@@ -30,6 +39,8 @@ data Config = Config
     --   is fetched? A new image will be randomly selected every
     --   @cfgSlideDuration * cfgBooruPersists * num_slides@ seconds.
   , cfgBooruPersists :: Int
+    -- | Portrait, landscape or either?
+  , cfgBooruFormat   :: PictureFormat
     -- | How many seconds between slide updates?
   , cfgSlideDuration :: Int
   } deriving (Show, Read)
@@ -41,6 +52,7 @@ defaultConfig = Config
   , cfgBooruRating   = 's'
   , cfgBooruTags     = []
   , cfgBooruPersists = 10
+  , cfgBooruFormat   = Either
   , cfgSlideDuration = 30
   }
 

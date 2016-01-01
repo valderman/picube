@@ -40,13 +40,17 @@ randomBooru = liftIO $ do
             if null res
               then return ""
               else do
-                ix <- randomRIO (0, length res-1)
-                G.booruDownload booru basefile (G.imgSampleURL (res !! ix))
+                let res' = filterImgs (cfgBooruFormat cfg) res
+                ix <- randomRIO (0, length res'-1)
+                G.booruDownload booru basefile (G.imgSampleURL (res' !! ix))
                 writeIORef booruPersists (cfgBooruPersists cfg)
                 return (basefile ++ "?" ++ show ix)
           _ -> do
             return []
   where
+    filterImgs Either = id
+    filterImgs Portrait = filter (\i -> G.imgHeight i > G.imgWidth i)
+    filterImgs Landscape = filter (\i -> G.imgHeight i < G.imgWidth i)
     basefile = "booru.jpg"
 
 -- | Update the server's configuration.

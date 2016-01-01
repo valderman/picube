@@ -25,6 +25,8 @@ booruConfigBox api cfg@(Config {..}) = do
                                   (selIx cfgBooruRating)
   (tags, getTags) <- newTextField "Gelbooru tags:" "tags" "text"
                                   (unwords cfgBooruTags)
+  (fmt, getFmt) <- dropdown "Format:" "format" formats
+                                  (fromEnum cfgBooruFormat)
   hdr <- newElem "h3" `with`
     [ "textContent" =: "Gelbooru configuration"
     , style "margin" =: "0.5em"]
@@ -32,7 +34,7 @@ booruConfigBox api cfg@(Config {..}) = do
     [ "textContent" =: "Save"
     , style "margin" =: "0.5em"]
   box <- newElem "div" `with`
-    [ children [hdr, user, pass, rating, tags, btn]
+    [ children [hdr, user, pass, rating, tags, fmt, btn]
     , style "display" =: "inline-block"
     , style "border" =: "1px solid black"
     , style "width" =: "100%"
@@ -42,11 +44,13 @@ booruConfigBox api cfg@(Config {..}) = do
     p' <- getPass
     t' <- getTags
     r' <- getRating
+    f' <- getFmt
     let cfg' = cfg
           { cfgBooruUsername = u'
           , cfgBooruPassword = p'
           , cfgBooruTags = words t'
           , cfgBooruRating = head r'
+          , cfgBooruFormat = toEnum (read f')
           }
     saveConfig api cfg'
   return box
@@ -63,6 +67,12 @@ ratings =
   , ("Questionable", "q")
   , ("Explicit", "e")
   , ("Any", "a")]
+
+formats :: [(String, String)]
+formats =
+  [ ("Portrait", show $ fromEnum Portrait)
+  , ("Landscape", show $ fromEnum Landscape)
+  , ("Either", show $ fromEnum Either)]
 
 -- | Display configuration.
 displayConfigBox :: API -> Config -> Client Elem
