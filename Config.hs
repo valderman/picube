@@ -19,7 +19,7 @@ saveConfig api cfgref cfg = do
 -- | Gelbooru configuration.
 booruConfigBox :: API -> IORef Config -> Client Elem
 booruConfigBox api cfgref = do
-  cfg@(Config {..}) <- liftIO $ readIORef cfgref
+  (Config {..}) <- liftIO $ readIORef cfgref
   (user, getUser) <- newTextField "Gelbooru username:" "user" "text"
                                   cfgBooruUsername
   (pass, getPass) <- newTextField "Gelbooru password:" "pass" "password"
@@ -81,7 +81,7 @@ formats =
 -- | Display configuration.
 displayConfigBox :: API -> IORef Config -> Client Elem
 displayConfigBox api cfgref = do
-  cfg@(Config {..}) <- liftIO $ readIORef cfgref
+  (Config {..}) <- liftIO $ readIORef cfgref
   (delay, getSecs) <- newTextField "Seconds between frames:" "s" "number"
                                    (show cfgSlideDuration)
   hdr <- newElem "h3" `with`
