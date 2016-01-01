@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Config (configMain) where
 import Control.Monad
+import Data.IORef
 import Haste.App.Standalone
 import Haste.DOM
 import Haste.Events
@@ -8,15 +9,17 @@ import Server.API
 import Client.GuiUtils
 
 -- | Save configuration with pretty confirmation screen.
-saveConfig :: API -> Config -> Client ()
-saveConfig api cfg = do
+saveConfig :: API -> IORef Config -> Config -> Client ()
+saveConfig api cfgref cfg = do
   appendChild documentBody saveOverlay
   onServer $ setCfg api <.> cfg
+  liftIO $ writeIORef cfgref cfg
   setOverlayMessage "Configuration saved, click to continue"
 
 -- | Gelbooru configuration.
-booruConfigBox :: API -> Config -> Client Elem
-booruConfigBox api cfg@(Config {..}) = do
+booruConfigBox :: API -> IORef Config -> Client Elem
+booruConfigBox api cfgref = do
+  cfg@(Config {..}) <- liftIO $ readIORef cfgref
   (user, getUser) <- newTextField "Gelbooru username:" "user" "text"
                                   cfgBooruUsername
   (pass, getPass) <- newTextField "Gelbooru password:" "pass" "password"
@@ -45,14 +48,15 @@ booruConfigBox api cfg@(Config {..}) = do
     t' <- getTags
     r' <- getRating
     f' <- getFmt
-    let cfg' = cfg
+    cfg' <- liftIO $ readIORef cfgref
+    let cfg'' = cfg'
           { cfgBooruUsername = u'
           , cfgBooruPassword = p'
           , cfgBooruTags = words t'
           , cfgBooruRating = head r'
           , cfgBooruFormat = toEnum (read f')
           }
-    saveConfig api cfg'
+    saveConfig api cfgref cfg''
   return box
 
 selIx :: Char -> Int
@@ -75,8 +79,9 @@ formats =
   , ("Either", show $ fromEnum Either)]
 
 -- | Display configuration.
-displayConfigBox :: API -> Config -> Client Elem
-displayConfigBox api cfg@(Config {..}) = do
+displayConfigBox :: API -> IORef Config -> Client Elem
+displayConfigBox api cfgref = do
+  cfg@(Config {..}) <- liftIO $ readIORef cfgref
   (delay, getSecs) <- newTextField "Seconds between frames:" "s" "number"
                                    (show cfgSlideDuration)
   hdr <- newElem "h3" `with`
@@ -93,16 +98,17 @@ displayConfigBox api cfg@(Config {..}) = do
     , style "margin" =: "1em"]
   void $ btn `onEvent` Click $ \_ -> do
     s' <- getSecs
-    let cfg' = cfg {cfgSlideDuration = read s'}
-    saveConfig api cfg'
+    cfg' <- liftIO $ readIORef cfgref
+    let cfg'' = cfg' {cfgSlideDuration = read s'}
+    saveConfig api cfgref cfg''
   return box
 
 configMain :: API -> Client ()
 configMain api = do
   set documentBody [style "font-family" =: "helvetica"]
-  cfg <- onServer $ getCfg api
-  booru <- booruConfigBox api cfg
-  disp <- displayConfigBox api cfg
+  cfgref <- onServer (getCfg api) >>= liftIO . newIORef
+  booru <- booruConfigBox api cfgref
+  disp <- displayConfigBox api cfgref
   outer <- newElem "div" `with`
     [ children [disp, booru]
     , style "width" =: "30em"]
