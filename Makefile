@@ -25,7 +25,7 @@ release-js: $(HSFILES)
 
 # Finish build process with precompiled JS
 finish-arm: app.js app.html $(HSFILES)
-	ghc --make -O2 app.hs
+	ghc $(ARMOPTS) --make -O2 app.hs
 	./app --embed app.js app.html
 
 clean:
