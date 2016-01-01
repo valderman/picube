@@ -47,7 +47,7 @@ defaultConfig = Config
 {-# NOINLINE configRef #-}
 configRef :: IORef Config
 configRef = unsafePerformIO $ do
-  cfg <- catch (tryRead "config.txt")
+  cfg <- catch (tryRead "../config.txt")
                (\(SomeException _) -> pure defaultConfig)
   newIORef cfg
 
