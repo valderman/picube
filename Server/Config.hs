@@ -68,10 +68,8 @@ configRef = unsafePerformIO $ do
 
 tryRead :: FilePath -> IO Config
 tryRead fp = do
-  putStrLn "reading file"
   withFile fp ReadMode $ \h -> do
     s <- hGetContents h
-    putStrLn s
     case reads s of
       ((cfg, _) : _) -> return cfg
       _              -> fail "unable to parse config"
