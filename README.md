@@ -11,12 +11,14 @@ Usage
 -----
 Quickstart:
 
-Make sure that you have [GHC](http://haskell.org/platform) and
-[Haste](http://haste-lang.org) installed,
+To set up your build environment, make sure that you have
+[GHC](http://haskell.org/platform) and [Haste](http://haste-lang.org) installed,
 then install [haste-standalone](https://github.com/valderman/haste-standalone)
 twice; once using `cabal` (for GHC) and once using `haste-cabal` (for Haste).
+Finally, install [haste-deck](https://github.com/valderman/haste-deck) for
+Haste, again using `haste-cabal`.
 
-Then run the following:
+To build, run the following:
 
     $ make release
     $ mkdir img
